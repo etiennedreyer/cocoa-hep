@@ -75,7 +75,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
 	if (fCurrentGenerator)
 	{
 		//* particleGun
-		if (fCurrentGeneratorName == "particleGun")
+		if (fCurrentGeneratorName == "particleGun" && false) //HACK!
 		{
 			Detector_analysis_var &det_ana_obj = Detector_analysis_var::GetInstance();
 			G4double Phi0 = 0; //phi_fr + (phi_to - phi_fr) * G4UniformRand();
@@ -94,6 +94,43 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
 			fParticleGun_->GeneratePrimaryVertex(anEvent);
 		}
 		//* particleGun end
+		//* doublePionGun
+		else if (fCurrentGeneratorName == "particleGun")
+		{
+			Detector_analysis_var &det_ana_obj = Detector_analysis_var::GetInstance();
+
+			fParticleGun_ = new G4ParticleGun(1);
+
+			//Charged pion
+			double phi    = 2*(0.5 - G4UniformRand())*TMath::Pi();
+			double eta    = 2*(0.5 - G4UniformRand())*2.5;
+			double pt     =   (10 + 5 * G4UniformRand())*GeV;
+			double px     = pt * cos(phi);
+			double py     = pt * sin(phi);
+			double pz     = pt * sinh(eta);
+			fParticleGun_->SetParticleDefinition(G4ParticleTable::GetParticleTable()->FindParticle("pi+"));
+			fParticleGun_->SetParticleMomentum(G4ThreeVector(px, py, pz));
+			fParticleGun_->GeneratePrimaryVertex(anEvent);
+
+			//Neutral pion
+			double dphi    = 2*(0.5 - G4UniformRand())*TMath::Pi()/6;
+			double deta    = 2*(0.5 - G4UniformRand())*0.4;
+			double pt0     =   (10 + 5 * G4UniformRand())*GeV;
+			double phi0    = phi + dphi;
+			while(abs(phi0) > TMath::Pi())
+			{
+				if(phi0 < 0)   phi += TMath::Pi();
+				else if(phi0 > 0) phi -= TMath::Pi();
+			}
+			double eta0    = eta + deta;
+			double px0     = pt0 * cos(phi0);
+			double py0     = pt0 * sin(phi0);
+			double pz0     = pt0 * sinh(eta0);
+			fParticleGun_->SetParticleDefinition(G4ParticleTable::GetParticleTable()->FindParticle("pi0"));
+			fParticleGun_->SetParticleMomentum(G4ThreeVector(px0, py0, pz0));
+			fParticleGun_->GeneratePrimaryVertex(anEvent);
+		}
+		//* doublePionGun end
 		//* pythia8
 		else if (fCurrentGeneratorName == "pythia8")
 		{
