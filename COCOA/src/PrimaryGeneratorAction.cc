@@ -74,61 +74,61 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
 	// auto runAction = (OutputRunAction *)G4RunManager::GetRunManager()->GetUserRunAction();
 	if (fCurrentGenerator)
 	{
-		//* particleGun
-		if (fCurrentGeneratorName == "particleGun" && false) //HACK!
-		{
-			Detector_analysis_var &det_ana_obj = Detector_analysis_var::GetInstance();
-			G4double Phi0 = 0; //phi_fr + (phi_to - phi_fr) * G4UniformRand();
-			G4double eta1 = det_ana_obj.get_eta();//runAction->eta_step; //a + (b - a) * G4UniformRand();
-
-			double PtPi_P = 15 * GeV; //(10 + 5 * G4UniformRand())  * GeV;
-			double pxPi_P_init = PtPi_P * cos(Phi0);
-			double pyPi_P_init = PtPi_P * sin(Phi0);
-			double pzPi_P_init = PtPi_P * sinh(eta1);
-
-			fParticleGun_ = nullptr;
-			fParticleGun_ = new G4ParticleGun(1);
-			auto particleDefinition1 = G4ParticleTable::GetParticleTable()->FindParticle("geantino"); //"pi0"geantino#chargedgeantino
-			fParticleGun_->SetParticleDefinition(particleDefinition1);
-			fParticleGun_->SetParticleMomentum(G4ThreeVector(pxPi_P_init, pyPi_P_init, pzPi_P_init));
-			fParticleGun_->GeneratePrimaryVertex(anEvent);
-		}
-		//* particleGun end
 		//* doublePionGun
-		else if (fCurrentGeneratorName == "particleGun")
+		if (fCurrentGeneratorName == "particleGun")
 		{
-			Detector_analysis_var &det_ana_obj = Detector_analysis_var::GetInstance();
-
 			fParticleGun_ = new G4ParticleGun(1);
 
-			//Charged pion
+			/// choose the principal direction
 			double phi    = 2*(0.5 - G4UniformRand())*TMath::Pi();
 			double eta    = 2*(0.5 - G4UniformRand())*2.5;
-			double pt     =   (10 + 5 * G4UniformRand())*GeV;
+			double pt     =   (20 + 30 * G4UniformRand())*GeV;
 			double px     = pt * cos(phi);
 			double py     = pt * sin(phi);
 			double pz     = pt * sinh(eta);
-			fParticleGun_->SetParticleDefinition(G4ParticleTable::GetParticleTable()->FindParticle("pi+"));
-			fParticleGun_->SetParticleMomentum(G4ThreeVector(px, py, pz));
-			fParticleGun_->GeneratePrimaryVertex(anEvent);
+			double shoot_first = (G4UniformRand() > 0.25);
 
-			//Neutral pion
-			double dphi    = 2*(0.5 - G4UniformRand())*TMath::Pi()/6;
-			double deta    = 2*(0.5 - G4UniformRand())*0.4;
-			double pt0     =   (10 + 5 * G4UniformRand())*GeV;
-			double phi0    = phi + dphi;
-			while(abs(phi0) > TMath::Pi())
+			if (shoot_first)
 			{
-				if(phi0 < 0)   phi += TMath::Pi();
-				else if(phi0 > 0) phi -= TMath::Pi();
+				/// shoot the primary particle
+				fParticleGun_->SetParticleDefinition(G4ParticleTable::GetParticleTable()->FindParticle("e-"));
+				fParticleGun_->SetParticleMomentum(G4ThreeVector(px, py, pz));
+				fParticleGun_->GeneratePrimaryVertex(anEvent);
 			}
-			double eta0    = eta + deta;
-			double px0     = pt0 * cos(phi0);
-			double py0     = pt0 * sin(phi0);
-			double pz0     = pt0 * sinh(eta0);
-			fParticleGun_->SetParticleDefinition(G4ParticleTable::GetParticleTable()->FindParticle("pi0"));
-			fParticleGun_->SetParticleMomentum(G4ThreeVector(px0, py0, pz0));
-			fParticleGun_->GeneratePrimaryVertex(anEvent);
+
+			/// uniformly sample the number of additional particles to shoot from 0, 1, 2, 3
+			int n_add_particles = floor(4 * G4UniformRand());
+			if (n_add_particles == 0 && !shoot_first) n_add_particles = 1;
+
+			/// shoot the additional particles
+			for(int i = 0; i < n_add_particles; i++)
+			{
+				double sign_dphi = (G4UniformRand() > 0.5) ? 1.0 : -1.0;
+				double sign_deta = (G4UniformRand() > 0.5) ? 1.0 : -1.0;
+
+				/// choose the direction of the additional particle
+				double dphi_cell = 2 * TMath::Pi() / 256;
+				double deta_cell = 2 * 3.0 / 256;
+				double dphi    = sign_dphi*G4RandGauss::shoot(4*dphi_cell, dphi_cell);
+				double deta    = sign_deta*G4RandGauss::shoot(4*deta_cell, deta_cell);
+				double pt0     = (5 + 20 * G4UniformRand())*GeV;
+				double phi0    = phi + dphi;
+				while(abs(phi0) > TMath::Pi())
+				{
+					if(phi0 < 0)   phi0 += TMath::Pi();
+					else phi0 -= TMath::Pi();
+				}
+				double eta0    = eta + deta;
+				double px0     = pt0 * cos(phi0);
+				double py0     = pt0 * sin(phi0);
+				double pz0     = pt0 * sinh(eta0);
+
+				fParticleGun_->SetParticleDefinition(G4ParticleTable::GetParticleTable()->FindParticle("gamma"));
+
+				/// shoot it
+				fParticleGun_->SetParticleMomentum(G4ThreeVector(px0, py0, pz0));
+				fParticleGun_->GeneratePrimaryVertex(anEvent);
+			}
 		}
 		//* doublePionGun end
 		//* pythia8
