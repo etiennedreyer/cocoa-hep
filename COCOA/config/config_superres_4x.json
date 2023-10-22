@@ -41,11 +41,11 @@
     },
     "Graph_construction" :
     {
-        "max_samelayer_edges": [8,8,8,6,6,6],
-        "max_dr": [0.05,0.07,0.14,0.30,0.30,0.60],
-        "max_interlayer_edges": [1,2,2,2,2,1],
+        "max_samelayer_edges": [24,24,24,18,18,18],
+        "max_dr": [0.4,0.4,0.4,0.4,0.6,0.8],
+        "max_interlayer_edges": [9,18,18,18,18,9],
         "max_layer_sep": 1,
-        "max_celltrack_edges": [4,4,4,3,3,3],
+        "max_celltrack_edges": [12,12,12,9,9,9],
         "max_celltrack_dr": [0.15,0.15,0.4,1.10,1.10,2.00]
     },
     "TopoClustering":
