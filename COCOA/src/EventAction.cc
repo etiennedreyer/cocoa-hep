@@ -200,7 +200,7 @@ void EventAction::EndOfEventAction(const G4Event *evt)
 					trajectories.fAllTrajectoryInfo.push_back(trajectories.fAllConvElectrons.at(iconv));
 			}
 
-			Tracking tracking_low(trajectories.fAllTrajectoryInfo, false, tracks_list_low.Tracks_list, config_var.low_resolution);
+			Tracking tracking_low(trajectories.fAllTrajectoryInfo, true, tracks_list_low.Tracks_list, config_var.low_resolution);
 
 			ReduceResolution noise_apply;
 			noise_apply.apply_noise(cells_data_low.fCell_array);
