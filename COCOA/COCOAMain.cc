@@ -58,8 +58,9 @@ static void show_usage(std::string name)
 	std::cerr << "Usage: \n" << name << " <option(s)> "
 			  << "Options:\n"
 			  << "\t--config (-c) <str>\t path to json configuration file\n"
-			  << "\t--macro (-m) <str>\t path to Geant4 or Pythia8 macro file for event generation (can be set in json configuration file)\n"
+			  << "\t--macro (-m) <str>\t path to Geant4, Pythia8, or HepMC macro file for event generation (can be set in json configuration file)\n"
 			  << "\t--output (-o) <str>\t path (incl. name) of output ROOT file to be written (can be set in json configuration file)\n"
+			  << "\t--input (-i) <str>\t path to HepMC (.hmc) input file (overrides the default path set in the HepMC macro file)\n"
 			  << "\t--seed (-s) <int>\t set random seed\n"
 			  << "\t--nevents (-n) <int>\t number of events to generate (default is taken from macro).\n"
 			  << "\t--help (-h)\t show this message\n"
@@ -196,7 +197,19 @@ int main(int argc, char **argv)
 	}
 	Config_reader_var &config_var = Config_reader_var::GetInstance();
 	Config_reader_func config_json_func(path_to_config, config_var);
-	
+
+	if ((root_file_path == ""))
+	{
+		if (config_var.Output_file_path!="")
+		{
+			root_file_path = config_var.Output_file_path;
+		}
+		else
+		{
+			root_file_path = "cocoa_output.root";
+		}
+	}	
+
 	//* choose the Random engine
 	CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine());
 	G4Random::setTheSeed(seed);
@@ -224,17 +237,6 @@ int main(int argc, char **argv)
 
 	G4VUserPrimaryGeneratorAction *gen_action = new PrimaryGeneratorAction;
 	runManager->SetUserAction(gen_action);
-
-	if ((root_file_path == ""))
-	{
-		if (config_var.Output_file_path!="")
-			root_file_path = config_var.Output_file_path;
-		else
-		{
-			G4cout<<"root_file_path is not given!"<<G4endl;
-			return 1;
-		}
-	}
 	
 	OutputRunAction *outputrunaction = new OutputRunAction(root_file_path, config_var.Save_truth_particle_graph);
 	runManager->SetUserAction(outputrunaction);
@@ -286,7 +288,7 @@ int main(int argc, char **argv)
 			}
 			else if ( (input_file_path != "") && (line.find("/generator/hepmcAscii/open") != std::string::npos) )
 			{
-				if (input_file_path.find(".hmc") != std::string::npos)
+				if ((input_file_path.find(".hmc") != std::string::npos) || (input_file_path.find(".hepmc") != std::string::npos))
 				{
 					UImanager->ApplyCommand(G4String("/generator/hepmcAscii/open " + input_file_path));
 				}
