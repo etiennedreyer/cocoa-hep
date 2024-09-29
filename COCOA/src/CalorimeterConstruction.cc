@@ -73,6 +73,9 @@ void CalorimeterConstruction::EndCap_Calorimeter()
 	long double minDPhi                = GetMinDPhi();
 	long double depth                  = 0.0;
 
+	G4cout << "nPixelsMax = " << nPixelsMax << G4endl;
+	G4cout << "minDPhi = " << minDPhi << G4endl;
+
 	//
 	// ECAL endcap
 	//
@@ -266,6 +269,8 @@ void CalorimeterConstruction::Build_Barrel_CAL(int NumberOfPixel, int cellMergeF
 
         CheckMergeFactor( NumberOfPixel, cellMergeFactor );
     
+	G4cout << "Building barrel calorimeter layer with " << NumberOfPixel << " pixels ( " << cellMergeFactor << " merged pixels ) " << G4endl;
+
 	G4RotationMatrix *zRot = new G4RotationMatrix; // Rotates X and Z axes only
 	zRot->rotateZ(0);
 	G4ReflectZ3D reflection(0);

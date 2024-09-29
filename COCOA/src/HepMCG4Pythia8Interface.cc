@@ -286,6 +286,8 @@ HepMC::GenEvent *HepMCG4Pythia8Interface::GenerateHepMCEvent()
 			}
 		}
 	}
+	// HepMC::IO_GenEvent ascii_io("/srv01/agrp/dreyet/cocoa-hep/COCOA/cocoa_generated_event.hmc", std::ios::out);
+	// ascii_io << hepmcevt;
 	return hepmcevt;
 }
 

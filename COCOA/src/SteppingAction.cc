@@ -177,6 +177,10 @@ int *SteppingAction::CellIndex(const char* cellName, double XPos, double YPos, d
 	ZXYBin[0] = R_Bin;
 	ZXYBin[1] = Eta_Bin;
 	ZXYBin[2] = Phi_Bin;
+
+	// Print a table of cellName, XPos, YPos, ZPos, EtaPos, PhiPos, R_Bin, Eta_Bin, Phi_Bin
+	G4cout << cellName << "," << XPos << "," << YPos << "," << ZPos << "," << EtaPos << "," << PhiPos << "," << R_Bin << "," << Eta_Bin << "," << Phi_Bin << G4endl;
+
 	return ZXYBin;
 }
 
@@ -347,11 +351,13 @@ void SteppingAction::UserSteppingAction(const G4Step *astep)
 	// deposition is taken into account.
 	// ==================================================
 	float samplingFraction = ( volume_name.substr( 0, 1 ) == "E" ? config_json_var.samplingFraction_ECAL : config_json_var.samplingFraction_HCAL );
-	if ( gRandom->Uniform() > samplingFraction )
-	    edep = 0.0;
+	// if ( gRandom->Uniform() > samplingFraction ) //HACK!
+	//     edep = 0.0;
 	
 	if (foundTraj && edep > 0.)
 	{
+			// Print the edep, parent ID, volume name
+			G4cout << edep << "," << ParentID << "," << volume_name << ",";
 
 	        std::string volume_name = touch1->GetVolume()->GetName();
 	        int *Bin                = CellIndex( volume_name.c_str(),
