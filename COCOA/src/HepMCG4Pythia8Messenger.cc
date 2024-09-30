@@ -96,6 +96,10 @@ HepMCG4Pythia8Messenger::HepMCG4Pythia8Messenger(HepMCG4Pythia8Interface* agen)
   minEta->SetGuidance("set min Eta.");
   maxEta = new G4UIcmdWithADouble("/generator/pythia8/maxEta", this);
   maxEta->SetGuidance("set max Eta.");
+  minPt = new G4UIcmdWithADouble("/generator/pythia8/minPt", this);
+  minPt->SetGuidance("set min Pt.");
+  maxPt = new G4UIcmdWithADouble("/generator/pythia8/maxPt", this);
+  maxPt->SetGuidance("set max Pt.");
 }
 
 HepMCG4Pythia8Messenger::~HepMCG4Pythia8Messenger()
@@ -113,6 +117,8 @@ HepMCG4Pythia8Messenger::~HepMCG4Pythia8Messenger()
   delete maxEnergy;
   delete minEta;
   delete maxEta;
+  delete minPt;
+  delete maxPt;
 
   delete dir;
 }
@@ -179,6 +185,14 @@ void HepMCG4Pythia8Messenger::SetNewValue(G4UIcommand* command,
   else if (command==maxEta)
   {
     MaxEta = maxEta->GetNewDoubleValue(newValues);
+  }
+  else if (command==minPt)
+  {
+    MinPt = minPt->GetNewDoubleValue(newValues);
+  }
+  else if (command==maxPt)
+  {
+    MaxPt = maxPt->GetNewDoubleValue(newValues);
   }
 }
 

@@ -56,6 +56,8 @@ private:
   G4UIcmdWithADouble*      maxEnergy;
   G4UIcmdWithADouble*      minEta;
   G4UIcmdWithADouble*      maxEta;
+  G4UIcmdWithADouble*      minPt;
+  G4UIcmdWithADouble*      maxPt;
 
 
 public:
@@ -69,6 +71,8 @@ public:
   G4double MaxEnergy;
   G4double MinEta;
   G4double MaxEta;
+  G4double MinPt = -1;
+  G4double MaxPt = -1;
 };
 
 #endif

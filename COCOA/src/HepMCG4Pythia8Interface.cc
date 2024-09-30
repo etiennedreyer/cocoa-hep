@@ -216,14 +216,18 @@ HepMC::GenEvent *HepMCG4Pythia8Interface::GenerateHepMCEvent()
 			SetRandomSeed(CLHEP::RandFlat::shootInt(900000000));
 			pythia.init();
 
-			double minenergy = messenger->MinEnergy;
-			double maxenergy = messenger->MaxEnergy;
 			double mineta = messenger->MinEta;
 			double maxeta = messenger->MaxEta;
-
-			double ee = CLHEP::RandFlat::shoot(minenergy, maxenergy); //100;
-
 			double eta = CLHEP::RandFlat::shoot(mineta, maxeta);
+
+			double minenergy = messenger->MinEnergy;
+			double maxenergy = messenger->MaxEnergy;
+			if (messenger->MinPt >= 0 && messenger->MaxPt > 0)
+			{
+				minenergy = messenger->MinPt * cosh(eta);
+				maxenergy = messenger->MaxPt * cosh(eta);
+			}
+			double ee = CLHEP::RandFlat::shoot(minenergy, maxenergy); //100;
 
 			double phi = CLHEP::RandFlat::shoot(0., 2 * M_PI);
 			Pythia8::ParticleData &pdt = pythia.particleData;
