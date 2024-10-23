@@ -218,13 +218,13 @@ void Cells_data::fill_cells_in_topoclusters()
             for (int iphi = 0; iphi < (int) Number_Pixel_Flatten.at(ilay); iphi++)
             {
                 Cell &local_cell = fCell_array.at(ilay).at(ieta).at(iphi);
-                if (local_cell.get_label() != 0)
-                {
-                    local_cell.position_in_list = pos_in_list;
-                    Cells_in_topoclusters.push_back(&fCell_array.at(ilay).at(ieta).at(iphi));
-                    pos_in_list++;
-					sum+=local_cell.get_total_energy();
-                }
+                // if (local_cell.get_label() != 0) // HACK! push-back ALL cells as if they were in topoclusters
+                // {
+				local_cell.position_in_list = pos_in_list;
+				Cells_in_topoclusters.push_back(&fCell_array.at(ilay).at(ieta).at(iphi));
+				pos_in_list++;
+				sum+=local_cell.get_total_energy();
+                // }
             }
         }
     }

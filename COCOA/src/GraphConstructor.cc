@@ -13,7 +13,7 @@ GraphConstructor::GraphConstructor(std::vector<Cell*> &low_cells_in_topoclusters
 GraphConstructor::GraphConstructor(std::vector<Cell*> &low_cells_in_topoclusters, std::vector<Track_struct> &tracks_list, std::vector<G4int> &particle_to_track, Graph_construction_data &graph_obj,
 				     std::vector<float> *_particle_dep_energies)
 {
-	fill_cell_to_cell_edges(low_cells_in_topoclusters, graph_obj.cell_to_cell_edge_start, graph_obj.cell_to_cell_edge_end);
+	// fill_cell_to_cell_edges(low_cells_in_topoclusters, graph_obj.cell_to_cell_edge_start, graph_obj.cell_to_cell_edge_end); // HACK! disable to avoid NxN matrix fill
 	fill_track_to_cell_edges(low_cells_in_topoclusters, tracks_list, graph_obj.track_to_cell_edge_start, graph_obj.track_to_cell_edge_end);
 	fill_particle_to_node_edges(low_cells_in_topoclusters, particle_to_track, graph_obj.particle_to_node_idx, graph_obj.particle_to_node_weight, _particle_dep_energies);
 }
@@ -25,7 +25,9 @@ void GraphConstructor::fill_cell_to_cell_edges(std::vector<Cell*> &cell,
 	std::map<std::pair<int, int>, int> edge_list;
 	int n_cells = cell.size();
 	const int N = n_cells;
+	std::cout << "n_cells = " << n_cells << std::endl;
 	TMatrixD dr_array(N, N);
+	std::cout << "dr_array was created" << std::endl;
 
 	// 1) Fill NxN matrix with dR of cell pairs
 	for (int cell_i = 0; cell_i < n_cells; ++cell_i)
