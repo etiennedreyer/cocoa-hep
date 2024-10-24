@@ -39,6 +39,7 @@
 #include "DetectorConstruction.hh"
 #include "DetectorGeometryDefinitions.hh"
 //#include "FullTrajectoryInfo.hh"
+#include <array>
 #include <math.h>
 #include <string>
 #include <algorithm>
@@ -69,7 +70,7 @@ SteppingAction::~SteppingAction()
 	;
 }
 
-int *SteppingAction::CellIndex(const char* cellName, double XPos, double YPos, double ZPos)
+std::array<int, 3> SteppingAction::CellIndex(const char* cellName, double XPos, double YPos, double ZPos)
 {
     //
     // Determine layer, eta and phi indices among the set of low resolution cells.
@@ -80,7 +81,7 @@ int *SteppingAction::CellIndex(const char* cellName, double XPos, double YPos, d
     //
 	int R_Bin(-1), Eta_Bin(-1), Phi_Bin(-1);
 
-	static int ZXYBin[3] = {-1};
+	std::array<int, 3> ZXYBin;
 	std::string name = cellName;
 	if ( name.substr( 1, 3 ) != "CAL" ) {
 	    ZXYBin[0] = -1;
@@ -106,15 +107,17 @@ int *SteppingAction::CellIndex(const char* cellName, double XPos, double YPos, d
 
 	
 	for( size_t iMainLayer = 0; iMainLayer < geometry.layer_inn_radius_ECAL.size(); ++iMainLayer ) {
-	    if ( isECAL && iMainLayer == mainLayerIndex )
-		break;
+	    if ( isECAL && iMainLayer == mainLayerIndex ) {
+			break;
+		}
 	    R_Bin += geometry.layer_inn_radius_ECAL[iMainLayer].size();
 	}
 	if ( !isECAL ) {
 	    for( size_t iMainLayer = 0; iMainLayer < geometry.layer_inn_radius_HCAL.size(); ++iMainLayer ) {
-		if ( iMainLayer == mainLayerIndex )
-		    break;
-		R_Bin += geometry.layer_inn_radius_HCAL[iMainLayer].size();
+			if ( iMainLayer == mainLayerIndex ) {
+				break;
+			}
+			R_Bin += geometry.layer_inn_radius_HCAL[iMainLayer].size();
 	    }
 	}
 	
@@ -126,6 +129,8 @@ int *SteppingAction::CellIndex(const char* cellName, double XPos, double YPos, d
 	// Phi_Bin = (int) floor(PhiPos/divided_tube_dPhi);
 
 	double EtaPos = -1 * log(tan(0.5 * acos(ZPos / pow(r_sqr + pow(ZPos, 2), 0.5))));
+	int layer_index = 0;
+	int location_index = -1;
 	// Eta_Bin = (int) floor((config_json_var.max_eta_endcap+EtaPos)/d_eta_old);
 	if (EtaPos >= -1 * config_json_var.max_eta_barrel && EtaPos <= config_json_var.max_eta_barrel)
 	    //
@@ -135,13 +140,17 @@ int *SteppingAction::CellIndex(const char* cellName, double XPos, double YPos, d
 		int nLow_Layers = geometry.number_of_pixels_flatten.size();
 		for (int ilow_layer = 0; ilow_layer < nLow_Layers; ilow_layer++)
 		{
-		    if ( r_sqr >= pow(geometry.layer_inn_radius_flatten.at(ilow_layer), 2) &&
+		    // Wrong condition
+			if ( r_sqr >= pow(geometry.layer_inn_radius_flatten.at(ilow_layer), 2) &&
 			 r_sqr < pow(geometry.layer_out_radius_flatten.at(ilow_layer), 2) ) {
-			
+			// Correct condition
+			// if (ilow_layer == R_Bin){
+				
 				Phi_Bin = (int)floor(PhiPos / geometry.layer_dphi_flatten.at(ilow_layer));
 				Eta_Bin = (int)floor((config_json_var.max_eta_endcap + EtaPos) / (geometry.layer_deta_flatten.at(ilow_layer)));
+				layer_index = ilow_layer;
+				location_index = 0;
 				break;
-
 		    }
 		}
 	}
@@ -155,6 +164,8 @@ int *SteppingAction::CellIndex(const char* cellName, double XPos, double YPos, d
 			{
 				Phi_Bin = (int)floor(PhiPos / geometry.layer_dphi_flatten.at(ilow_layer));
 				Eta_Bin = (int)floor((config_json_var.max_eta_endcap + EtaPos) / (geometry.layer_deta_flatten.at(ilow_layer)));
+				layer_index = ilow_layer;
+				location_index = 1;
 				break;
 			}
 		}
@@ -169,6 +180,8 @@ int *SteppingAction::CellIndex(const char* cellName, double XPos, double YPos, d
 			{
 				Phi_Bin = (int)floor(PhiPos / geometry.layer_dphi_flatten.at(ilow_layer));
 				Eta_Bin = (int)floor((config_json_var.max_eta_endcap + EtaPos) / (geometry.layer_deta_flatten.at(ilow_layer)));
+				layer_index = ilow_layer;
+				location_index = 2;
 				break;
 			}
 		}
@@ -178,8 +191,8 @@ int *SteppingAction::CellIndex(const char* cellName, double XPos, double YPos, d
 	ZXYBin[1] = Eta_Bin;
 	ZXYBin[2] = Phi_Bin;
 
-	// Print a table of cellName, XPos, YPos, ZPos, EtaPos, PhiPos, R_Bin, Eta_Bin, Phi_Bin
-	G4cout << cellName << "," << XPos << "," << YPos << "," << ZPos << "," << EtaPos << "," << PhiPos << "," << R_Bin << "," << Eta_Bin << "," << Phi_Bin << G4endl;
+	// Print a table of cellName, XPos, YPos, ZPos, EtaPos, PhiPos, R_Bin, Eta_Bin, Phi_Bin,layer_index,location_index
+	// G4cout << cellName << "," << XPos << "," << YPos << "," << ZPos << "," << EtaPos << "," << PhiPos << "," << R_Bin << "," << Eta_Bin << "," << Phi_Bin << "," << layer_index << "," << location_index << G4endl;
 
 	return ZXYBin;
 }
@@ -210,52 +223,22 @@ void SteppingAction::UserSteppingAction(const G4Step *astep)
 	std::string volume_name  = touch1->GetVolume()->GetName();
 	G4double eKin            = aTrack->GetKineticEnergy();
 	
-	if ( volume_name.substr(1, 3) == "CAL" ) {
+	if ( (volume_name.substr(1, 3) == "CAL") || std::strstr( volume_name.c_str(), "outermostInner" ) ) {
 	    
 	    for ( size_t iPrimaryParticle = 0; iPrimaryParticle < trajectories.fAllTrajectoryInfo.size(); ++iPrimaryParticle ) {
 		
 		FullTrajectoryInfo &trajectory = trajectories.fAllTrajectoryInfo[iPrimaryParticle];
 		
-		if ( trackPdgId == trajectory.fPDGCode &&
-		     std::find( trajectory.vTrackID.begin(), trajectory.vTrackID.end(), trackID ) != trajectory.vTrackID.end() ) {
-		    
+		if ( trackPdgId == trajectory.fPDGCode && std::find( trajectory.vTrackID.begin(), trajectory.vTrackID.end(), trackID ) != trajectory.vTrackID.end() ) {
 		    if ( eKin > trajectory.caloExtrapolMaxEkin ) {
-			
-			trajectory.caloExtrapolMaxEkin = eKin;
-			trajectory.caloExtrapolEta     = ThetaToEta( acos( PreStepPoint.z() / sqrt( sqr( PreStepPoint.x() ) + sqr( PreStepPoint.y() ) + sqr( PreStepPoint.z() ) ) ) );
-			trajectory.caloExtrapolPhi     = GetPhi( PreStepPoint.x(),
-								 PreStepPoint.y() );
-			break;
-			
+				trajectory.caloExtrapolMaxEkin = eKin;
+				trajectory.caloExtrapolEta     = ThetaToEta( acos( PreStepPoint.z() / sqrt( sqr( PreStepPoint.x() ) + sqr( PreStepPoint.y() ) + sqr( PreStepPoint.z() ) ) ) );
+				trajectory.caloExtrapolPhi     = GetPhi( PreStepPoint.x(),
+									PreStepPoint.y() );
+				break;
 		    }
-		    
-		}
-		
+			}
 	    }
-	    
-	} else if ( std::strstr( volume_name.c_str(), "outermostInner" ) ) {
-
-	    for ( size_t iPrimaryParticle = 0; iPrimaryParticle < trajectories.fAllTrajectoryInfo.size(); ++iPrimaryParticle ) {
-		
-		FullTrajectoryInfo &trajectory = trajectories.fAllTrajectoryInfo[iPrimaryParticle];
-		
-		if ( trackPdgId == trajectory.fPDGCode &&
-		     std::find( trajectory.vTrackID.begin(), trajectory.vTrackID.end(), trackID ) != trajectory.vTrackID.end() ) {
-		    
-		    if ( eKin > trajectory.idExtrapolMaxEkin ) {
-			
-			trajectory.idExtrapolMaxEkin = eKin;
-			trajectory.idExtrapolEta     = ThetaToEta( acos( PreStepPoint.z() / sqrt( sqr( PreStepPoint.x() ) + sqr( PreStepPoint.y() ) + sqr( PreStepPoint.z() ) ) ) );
-			trajectory.idExtrapolPhi     = GetPhi( PreStepPoint.x(),
-							       PreStepPoint.y() );
-			break;
-			
-		    }
-		    
-		}
-		
-	    }
-	    
 	}
 	
 	//*Geantino
@@ -357,10 +340,10 @@ void SteppingAction::UserSteppingAction(const G4Step *astep)
 	if (foundTraj && edep > 0.)
 	{
 			// Print the edep, parent ID, volume name
-			G4cout << edep << "," << ParentID << "," << volume_name << ",";
+			// G4cout << edep << "," << ParentID << "," << volume_name << ",";
 
 	        std::string volume_name = touch1->GetVolume()->GetName();
-	        int *Bin                = CellIndex( volume_name.c_str(),
+	        std::array<int, 3> ZXYBin = CellIndex( volume_name.c_str(),
 						     PreStepPoint.x(),
 						     PreStepPoint.y(),
 						     PreStepPoint.z() );
@@ -381,18 +364,19 @@ void SteppingAction::UserSteppingAction(const G4Step *astep)
 		    if ( std::find( trajectories.fAllConvElectrons[iConvEl].vTrackID.begin(),
 				    trajectories.fAllConvElectrons[iConvEl].vTrackID.end(),
 				    trackID ) != trajectories.fAllConvElectrons[iConvEl].vTrackID.end() ) {
-			conv_el = new Particle_dep_in_cell;
-			conv_el->PDG_ID = trajectories.fAllConvElectrons[iConvEl].fPDGCode;
-			conv_el->particle_pos_in_true_list = iConvEl;
-			conv_el->Energy = edep / samplingFraction;
+			conv_el = new Particle_dep_in_cell{
+				.PDG_ID = trajectories.fAllConvElectrons[iConvEl].fPDGCode,
+				.particle_pos_in_true_list = static_cast<int>(iConvEl),
+				.Energy = static_cast<float>(edep / samplingFraction),
+			};
 			break;
 		    }
 		}
 		
 		
-		if ((*Bin >= 0 && *Bin < geometry.kNLayers))
+		if ((ZXYBin[0] >= 0 && ZXYBin[0] < geometry.kNLayers))
 		{
-			if ((*(Bin + 1) >= 0 && *(Bin + 1) < geometry.number_of_pixels_flatten.at(*Bin)) && (*(Bin + 2) >= 0 && *(Bin + 2) < geometry.number_of_pixels_flatten.at(*Bin)))
+			if ((ZXYBin[1] >= 0 && ZXYBin[1] < geometry.number_of_pixels_flatten.at(ZXYBin[0])) && (ZXYBin[2] >= 0 && ZXYBin[2] < geometry.number_of_pixels_flatten.at(ZXYBin[0])))
 			{
 				Etot = Ech + Enu;
 				// runData->AddTotalEnergy(Ech, Enu);
@@ -406,12 +390,12 @@ void SteppingAction::UserSteppingAction(const G4Step *astep)
 				if (config_json_var.Use_high_granularity)
 				{
 					Cells_data &cells_data = Cells_data::GetHigh();
-					cells_data.add_cell_info(*Bin, *(Bin + 1), *(Bin + 2), Ech / samplingFraction, Enu / samplingFraction, ptrc, conv_el);
+					cells_data.add_cell_info(ZXYBin[0], ZXYBin[1], ZXYBin[2], Ech / samplingFraction, Enu / samplingFraction, ptrc, conv_el);
 				}
 				else
 				{
 					Cells_data &cells_data = Cells_data::GetLow();
-					cells_data.add_cell_info(*Bin, *(Bin + 1), *(Bin + 2), Ech / samplingFraction, Enu / samplingFraction, ptrc, conv_el);
+					cells_data.add_cell_info(ZXYBin[0], ZXYBin[1], ZXYBin[2], Ech / samplingFraction, Enu / samplingFraction, ptrc, conv_el);
 				}
 			}
 			// runData->AddCaloCell(*Bin, *(Bin+1), *(Bin+2), Ech, Enu, ptrc);

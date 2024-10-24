@@ -8,6 +8,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
+# Add compile commands
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
 # You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui
@@ -137,7 +139,6 @@ set(COCOA_SCRIPTS
     init_vis.mac
     vis.mac
     )
-
 
 add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory

@@ -311,7 +311,7 @@ void CalorimeterConstruction::Build_Barrel_CAL(int NumberOfPixel, int cellMergeF
 		if ( iCell > 1 )
 		    r_inn = r_inn + previous_layers_delta_r * ( cos( theta_rear ) - cos( theta_all[iCell - 2] ) );
 		
-	        r_out = r_inn + depth * cos( theta_rear ); // 1 / cosh( eta )  scaling. Note that the polar angle is ( pi / 2 - theta_rear ) .
+		r_out = r_inn + depth * cos( theta_rear ); // 1 / cosh( eta )  scaling. Note that the polar angle is ( pi / 2 - theta_rear ) .
 	    
 		vy_rear = -sin( theta_rear );
 		vz_rear =  cos( theta_rear );
@@ -353,12 +353,37 @@ void CalorimeterConstruction::Build_Barrel_CAL(int NumberOfPixel, int cellMergeF
 	}
 	
 	ptr_cells_final = &cells_maxNPixels;
+
+	// DEBUG:: Unmerged cells print
+	// int ilayer = LV[4] - 49;
+	// int icell = 0;
+	// for ( G4VSolid* cell : *ptr_cells_final ) {
+	// 	if (LV[0] == 'E' && direction == 1) {
+	// 		auto polyhedron = cell->CreatePolyhedron();
+	// 		int nVertices = polyhedron->GetNoVertices();
+	// 		for (int i = 1; i <= nVertices; i++) {
+	// 			auto vertex = polyhedron->GetVertex(i);
+	// 			G4cout << LV[4] << "," << nVertices << "," << icell << "," << vertex.x() << "," << vertex.y() << "," << vertex.z() << G4endl;
+	// 		}
+	// 		icell++;
+	// 	}
+	// }
 	if ( cellMergeFactor > 1 )
 	    ptr_cells_final = MergeCells( &cells_maxNPixels,
 					  NumberOfPixel,
 					  cellMergeFactor );
 	int iEta = 0;
 	for ( G4VSolid* cell : *ptr_cells_final ) {
+		// DEBUG:: Merged cells print
+		// if (LV[0] == 'E' && direction == 1) {
+		// 	auto polyhedron = cell->CreatePolyhedron();
+		// 	int nVertices = polyhedron->GetNoVertices();
+		// 	for (int i = 1; i <= nVertices; i++) {
+		// 		auto vertex = polyhedron->GetVertex(i);
+		// 		G4cout << LV[4] << "," << nVertices << "," << icell << "," << vertex.x() << "," << vertex.y() << "," << vertex.z() << G4endl;
+		// 	}
+		// 	icell++;
+		// }
 	        ++iEta;
 		CAL_LV               = new G4LogicalVolume( cell,
 							    Material_CAL,

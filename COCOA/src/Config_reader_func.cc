@@ -126,10 +126,11 @@ Config_reader_func::Config_reader_func(std::string path, Config_reader_var &conf
         config_var.low_resolution.number_of_pixels_flatten.push_back(config_var.low_resolution.number_of_pixels_ECAL.at(ilow_layer).at(0));
         config_var.low_resolution.layer_deta_flatten.push_back(config_var.low_resolution.layer_deta_ECAL.at(ilow_layer).at(0));
         config_var.low_resolution.layer_dphi_flatten.push_back(config_var.low_resolution.layer_dphi_ECAL.at(ilow_layer).at(0));
-        long double r_out = r_inn + config_var.low_resolution.resolution_width_of_ECAL_layers_in_X0.at(ilow_layer).at(0) * config_var.Material_ECAL->GetRadlen();
+        long double r_out = r_inn + config_var.low_resolution.resolution_width_of_ECAL_layers_in_X0.at(ilow_layer).at(0) * config_var.Material_ECAL->GetRadlen(); /// IMPORTANT!
         config_var.low_resolution.layer_inn_radius_ECAL.at(ilow_layer).at(0) = r_inn;
         config_var.low_resolution.layer_mid_radius_ECAL.at(ilow_layer).at(0) = r_out - 0.5 * (r_out - r_inn);
         config_var.low_resolution.layer_out_radius_ECAL.at(ilow_layer).at(0) = r_out;
+        std::cout << "ECAL: Layer " << ilow_layer << " r_inn " << r_inn << " r_out " << r_out << std::endl;
         config_var.low_resolution.layer_inn_radius_flatten.push_back(config_var.low_resolution.layer_inn_radius_ECAL.at(ilow_layer).at(0));
         config_var.low_resolution.layer_mid_radius_flatten.push_back(config_var.low_resolution.layer_mid_radius_ECAL.at(ilow_layer).at(0));
         config_var.low_resolution.layer_out_radius_flatten.push_back(config_var.low_resolution.layer_out_radius_ECAL.at(ilow_layer).at(0));
@@ -147,6 +148,7 @@ Config_reader_func::Config_reader_func(std::string path, Config_reader_var &conf
         config_var.low_resolution.layer_dphi_flatten.push_back(config_var.low_resolution.layer_dphi_HCAL.at(ilow_layer).at(0));
         config_var.low_resolution.layer_deta_flatten.push_back(config_var.low_resolution.layer_deta_HCAL.at(ilow_layer).at(0));
         long double r_out = r_inn + config_var.low_resolution.resolution_width_of_HCAL_layers_in_Lambda_int.at(ilow_layer).at(0) * config_var.Material_HCAL->GetNuclearInterLength();
+        std::cout << "HCAL: Layer " << ilow_layer << " r_inn " << r_inn << " r_out " << r_out << std::endl;
         config_var.low_resolution.layer_inn_radius_HCAL.at(ilow_layer).at(0) = r_inn;
         config_var.low_resolution.layer_mid_radius_HCAL.at(ilow_layer).at(0) = r_out - 0.5 * (r_out - r_inn);
         config_var.low_resolution.layer_out_radius_HCAL.at(ilow_layer).at(0) = r_out;
