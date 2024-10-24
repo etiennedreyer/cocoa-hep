@@ -24,3 +24,4 @@ COCOA/cmake-build-debug/
 event_display/output/*
 event_display/*.html
 *.svg
+.cache

@@ -36,17 +36,15 @@
 #include "Cells_data.hh"
 #include "Full_trajectory_info_data.hh"
 #include "Detector_analysis_var.hh"
+#include <array>
 
 
 class SteppingAction : public G4UserSteppingAction {
-public:
-  SteppingAction(Geometry_definition geometry);
-  virtual ~SteppingAction();
+	public:
+		SteppingAction(Geometry_definition geometry);
+		virtual ~SteppingAction();
+		virtual void UserSteppingAction(const G4Step* astep);
 
-  virtual void UserSteppingAction(const G4Step* astep);
-
-        int *CellIndex(const char* cellName, double RhoPos, double EtaPos, double PhiPos) ;
-    
 	private:
 		Config_reader_var& config_json_var = Config_reader_var::GetInstance();
 		std::vector< std::vector <long double> > High_cone_min_length_ECAL;
@@ -58,6 +56,8 @@ public:
 		long double theta_min;
 		Geometry_definition geometry;
 		char* Name_creation(char *name, int low_layer, int high_layer);
+
+		std::array<int, 3> CellIndex(const char* cellName, double RhoPos, double EtaPos, double PhiPos) ;
                     
 };
 
