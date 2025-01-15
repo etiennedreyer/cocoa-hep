@@ -37,18 +37,13 @@
 // #include "DataStorage.hh"
 #include "SteppingAction.hh"
 #include "DetectorConstruction.hh"
+#include "CalorimeterConstruction.hh"
 #include "DetectorGeometryDefinitions.hh"
 //#include "FullTrajectoryInfo.hh"
 #include <math.h>
 #include <string>
 #include <algorithm>
 
-char* SteppingAction::Name_creation(char *name, int low_layer, int high_layer)
-{
-	name[4] = (low_layer+49);
-	name[6] = (high_layer+49);
-	return name;
-}
 SteppingAction::SteppingAction(Geometry_definition Geometry) : G4UserSteppingAction()
 {
 
@@ -232,10 +227,10 @@ void SteppingAction::UserSteppingAction(const G4Step *astep)
 			int num_sub_ecal_layrs = geometry.number_of_pixels_ECAL.at(iecal_low).size();
 			for (int iecal_high = 0; iecal_high < num_sub_ecal_layrs; iecal_high++)
 			{
-				if (lvol->GetName()==Name_creation(strdup("ECALN_N_forward_LV"),iecal_low,iecal_high)||
- 				lvol->GetName()==Name_creation(strdup("ECALN_N_back_LV"),iecal_low,iecal_high)||
-				lvol->GetName()==Name_creation(strdup("ECALN_N_Endcap_forward_LV"),iecal_low,iecal_high)||
-				lvol->GetName()==Name_creation(strdup("ECALN_N_Endcap_back_LV"),iecal_low,iecal_high))
+				if (lvol->GetName()==Name_creation(strdup("ECALNN_N_forward_LV"),iecal_low,iecal_high)||
+ 				lvol->GetName()==Name_creation(strdup("ECALNN_N_back_LV"),iecal_low,iecal_high)||
+				lvol->GetName()==Name_creation(strdup("ECALNN_N_Endcap_forward_LV"),iecal_low,iecal_high)||
+				lvol->GetName()==Name_creation(strdup("ECALNN_N_Endcap_back_LV"),iecal_low,iecal_high))
 				{
 					det_ana_obj.add_lengths(step_l/rad_l, step_l/int_l,lay_count + 1);
 					if_track = false;
@@ -250,10 +245,10 @@ void SteppingAction::UserSteppingAction(const G4Step *astep)
 			int num_sub_hcal_layers = geometry.number_of_pixels_HCAL.at(ihcal_low).size();
 			for (int ihcal_high = 0; ihcal_high < num_sub_hcal_layers; ihcal_high++)
 			{
-				if (lvol->GetName()==Name_creation(strdup("HCALN_N_forward_LV"),ihcal_low,ihcal_high)||
-				lvol->GetName()==Name_creation(strdup("HCALN_N_back_LV"),ihcal_low,ihcal_high)||
-				lvol->GetName()==Name_creation(strdup("HCALN_N_Endcap_forward_LV"),ihcal_low,ihcal_high)||
-				lvol->GetName()==Name_creation(strdup("HCALN_N_Endcap_back_LV"),ihcal_low,ihcal_high))
+				if (lvol->GetName()==Name_creation(strdup("HCALNN_N_forward_LV"),ihcal_low,ihcal_high)||
+				lvol->GetName()==Name_creation(strdup("HCALNN_N_back_LV"),ihcal_low,ihcal_high)||
+				lvol->GetName()==Name_creation(strdup("HCALNN_N_Endcap_forward_LV"),ihcal_low,ihcal_high)||
+				lvol->GetName()==Name_creation(strdup("HCALNN_N_Endcap_back_LV"),ihcal_low,ihcal_high))
 				{
 					det_ana_obj.add_lengths(step_l/rad_l, step_l/int_l,lay_count + 1);
 					if_track = false;

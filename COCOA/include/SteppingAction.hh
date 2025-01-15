@@ -57,7 +57,6 @@ public:
 		std::vector <long double> cone_max_length_flatten;
 		long double theta_min;
 		Geometry_definition geometry;
-		char* Name_creation(char *name, int low_layer, int high_layer);
                     
 };
 
